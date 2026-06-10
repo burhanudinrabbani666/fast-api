@@ -77,6 +77,19 @@ async def get_author_category_by_query(
     return books_to_return
 
 
+@app.get("/authors/{author_name}", tags=["Books"])
+async def get_all_author_book(author_name: str):
+    books_to_return: list[dict[str, str]] = []
+    for book in BOOKS:
+        if (
+            book.get("author", "").casefold()
+            == author_name.casefold()
+        ):
+            books_to_return.append(book)
+
+    return books_to_return
+
+
 @app.post("/books", tags=["Books"])
 async def create_new_book(
     new_book: dict[str, str] = Body(),
