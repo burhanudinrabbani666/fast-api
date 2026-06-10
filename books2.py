@@ -1,7 +1,8 @@
 from typing import Optional
 
-from fastapi import FastAPI, Path
+from fastapi import FastAPI, Path, Query, HTTPException
 from pydantic import BaseModel, Field
+from starlette import status
 
 app = FastAPI()
 
@@ -70,20 +71,24 @@ BOOKS = [
 ]
 
 
-@app.get("/books")
+@app.get("/books", status_code=status.HTTP_200_OK, tags=["Books"])
 def read_all_books():
     return BOOKS
 
 
-@app.get("/books/{book_id}")
+@app.get(
+    "/books/{book_id}", status_code=status.HTTP_200_OK, tags=["Books"]
+)
 def read_book(book_id: int = Path(gt=0)):
     for book in BOOKS:
         if book.id == book_id:
             return book
 
+    raise HTTPException(status_code=404, detail="Item not found")
 
-@app.get("/books/")
-def read_book_by_rating(book_rating: int):
+
+@app.get("/books/", status_code=status.HTTP_200_OK, tags=["Books"])
+def read_book_by_rating(book_rating: int = Query(gt=0, lt=6)):
     books_to_return: list[Book] = []
 
     for book in BOOKS:
@@ -93,29 +98,55 @@ def read_book_by_rating(book_rating: int):
     return books_to_return
 
 
-@app.post("/create-book")
+@app.post(
+    "/create-book",
+    status_code=status.HTTP_201_CREATED,
+    tags=["Books"],
+)
 def create_book(book_request: Book_request):
     new_book = Book(**book_request.model_dump())
     BOOKS.append(find_book_id(new_book))
 
 
-@app.put("/books/update-book")
+@app.put(
+    "/books/update-book",
+    status_code=status.HTTP_204_NO_CONTENT,
+    tags=["Books"],
+)
 def update_book(book: Book_request):
+    book_change = False
     for i in range(len(BOOKS)):
         if BOOKS[i].id == book.id:
             BOOKS[i] = book  # type: ignore
+            book_change = True
+
+    if not book_change:
+        raise HTTPException(status_code=404, detail="item not found")
 
 
-@app.delete("/books/{book_id}")
+@app.delete(
+    "/books/{book_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    tags=["Books"],
+)
 def delete_book(book_id: int = Path(gt=0)):
+    book_change = False
     for i in range(len(BOOKS)):
         if BOOKS[i].id == book_id:
             BOOKS.pop(i)
+            book_change = True
             break
 
+    if not book_change:
+        raise HTTPException(status_code=404, detail="item not found")
 
-@app.get("/books/publish/")
-def get_book_by_publish_date(publish_date: int):
+
+@app.get(
+    "/books/publish/", status_code=status.HTTP_200_OK, tags=["Books"]
+)
+def get_book_by_publish_date(
+    publish_date: int = Query(gt=2000, lt=2027)
+):
     books_to_return: list[Book] = []
     for book in BOOKS:
         if book.publish_date == publish_date:
