@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Body
 
 app = FastAPI()
+
 
 BOOKS: list[dict[str, str]] = [
     {
@@ -74,3 +75,21 @@ async def get_author_category_by_query(
             books_to_return.append(book)
 
     return books_to_return
+
+
+@app.post("/books", tags=["Books"])
+async def create_new_book(
+    new_book: dict[str, str] = Body(),
+):
+    BOOKS.append(new_book)
+    return new_book
+
+
+@app.put("/books/update_book", tags=["Books"])
+async def update_book(updated_book: dict[str, str] = Body()):
+    for i in range(len(BOOKS)):
+        if (
+            BOOKS[i].get("title", "").casefold()
+            == updated_book.get("title", "").casefold()
+        ):
+            BOOKS[i] = updated_book
