@@ -39,3 +39,10 @@ BOOKS: list[dict[str, str]] = [
 @app.get("/books", tags=["Books"])
 async def get_books():
     return BOOKS
+
+
+@app.get("/books/{title}", tags=["Books"])
+async def get_book_by_id(title: str):
+    for book in BOOKS:
+        if book.get("title", "").casefold() == title.casefold():
+            return book
