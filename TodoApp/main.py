@@ -1,4 +1,5 @@
 from typing import Annotated
+from pydantic import BaseModel, Field
 
 from fastapi import FastAPI, Depends, HTTPException, status, Path
 from database import engine, Sessionlocal
@@ -26,6 +27,13 @@ def get_db():
 db_depedency = Annotated[Session, Depends(get_db)]
 
 
+class TodoRequest(BaseModel):
+    title: str = Field(min_length=3)
+    description: str = Field(min_length=3, max_length=100)
+    priority: int = Field(gt=0, lt=6)
+    complete: bool
+
+
 @app.get("/", status_code=status.HTTP_200_OK, tags=["Books"])
 async def read_all(db: db_depedency):
     return db.query(Todos).all()
@@ -43,3 +51,15 @@ async def read_todo(db: db_depedency, todo_id: int = Path(gt=0)):
         return todo_model
 
     raise HTTPException(status_code=404, detail="Todo not found")
+
+
+@app.post(
+    "/todos",
+    status_code=status.HTTP_201_CREATED,
+    tags=["Books"],
+)
+async def create_todo(db: db_depedency, todo_request: TodoRequest):
+    todo_model = Todos(**todo_request.model_dump())
+
+    db.add(todo_model)
+    db.commit()
