@@ -11,8 +11,8 @@ from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from jose import JWTError, jwt
 
-from database import Sessionlocal
-from models import Users
+from ..database import Sessionlocal
+from ..models import Users
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 

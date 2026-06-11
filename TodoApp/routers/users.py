@@ -1,6 +1,5 @@
 from typing import Annotated, Any
 from pydantic import BaseModel
-from database import Sessionlocal
 
 from passlib.context import CryptContext
 from fastapi import (
@@ -12,8 +11,9 @@ from fastapi import (
 )
 from sqlalchemy.orm import Session
 
+from ..database import Sessionlocal
+from ..models import Users
 from .auth import get_current_user
-from models import Users
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
