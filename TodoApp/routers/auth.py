@@ -1,15 +1,32 @@
-from typing import Annotated
+from datetime import datetime, timedelta, timezone
+from typing import Annotated, Any
 from pydantic import BaseModel
 
 from fastapi import APIRouter, Depends, status
+from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from jose import jwt
 
 from database import Sessionlocal
 from models import Users
 
 router = APIRouter()
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+SECRET_KEY = (
+    "1374ebf61b49930e570332f429da67aa81066943b89a6abddfe58df4cf83b0e2"
+)
+ALGHORITHM = "HS256"
+
+"""
+---------------------------------------------------------------------
+FUNCTION
+---------------------------------------------------------------------
+
+"""
+
+# --------------------------------------------------------------------
+# DATABASE
 
 
 def get_db():
@@ -22,6 +39,38 @@ def get_db():
 
 db_depedency = Annotated[Session, Depends(get_db)]
 
+# --------------------------------------------------------------------
+# AUTHENTICATION
+
+
+def autenticate_user(username: str, password: str, db: Session):
+    user = db.query(Users).filter(Users.username == username).first()
+    if not user:
+        return False
+
+    if not bcrypt_context.verify(password, user.hashed_password):
+        return False
+
+    return user
+
+
+def create_access_token(
+    username: str, user_id: int, exprires_delta: timedelta
+):
+    encode: dict[str, Any] = {"sub": username, "id": user_id}
+    expires = datetime.now(timezone.utc) + exprires_delta
+    encode.update({"exp": expires})
+
+    return jwt.encode(encode, SECRET_KEY, algorithm=ALGHORITHM)
+
+
+"""
+---------------------------------------------------------------------
+DATA SHAPH 
+---------------------------------------------------------------------
+
+"""
+
 
 class CreateUserRequest(BaseModel):
     username: str
@@ -32,8 +81,21 @@ class CreateUserRequest(BaseModel):
     role: str
 
 
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+"""
+---------------------------------------------------------------------
+ROUTES
+---------------------------------------------------------------------
+
+"""
+
+
 @router.post(
-    "/auth",
+    "/auth/sign-up",
     tags=["Auth"],
     status_code=status.HTTP_201_CREATED,
 )
@@ -56,3 +118,33 @@ async def create_user(
 
     db.add(create_user_model)
     db.commit()
+
+
+@router.post(
+    "/auth/login",
+    tags=["Auth"],
+    status_code=status.HTTP_200_OK,
+    response_model=Token,
+)
+async def login_for_access_token(
+    form_data: Annotated[
+        OAuth2PasswordRequestForm,
+        Depends(),
+    ],
+    db: db_depedency,
+):
+
+    user = autenticate_user(
+        form_data.username,
+        form_data.password,
+        db,
+    )
+
+    if not user:
+        return "Failed Authentication"
+
+    token = create_access_token(
+        user.username, user.id, timedelta(minutes=20)
+    )
+
+    return {"access_token": token, "token_type": "bearer"}
