@@ -21,6 +21,7 @@ bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 class NewPasswordRequest(BaseModel):
+    password: str
     new_password: str
 
 
@@ -41,6 +42,7 @@ def get_db():
 
 
 db_depedency = Annotated[Session, Depends(get_db)]
+
 user_depedency = Annotated[
     dict[str, Any] | None, Depends(get_current_user)
 ]
@@ -77,7 +79,10 @@ async def get_user(user: user_depedency, db: db_depedency):
     return current_user
 
 
-@router.post("/change_user")
+@router.post(
+    "/change_user",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
 async def change_user(
     user: user_depedency,
     db: db_depedency,
@@ -94,6 +99,15 @@ async def change_user(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
+        )
+
+    # Verify old password
+    if not bcrypt_context.verify(
+        new_password_request.password, current_user.hashed_password
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication Failed",
         )
 
     current_user.hashed_password = bcrypt_context.hash(
