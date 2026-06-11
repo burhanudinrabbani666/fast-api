@@ -120,6 +120,7 @@ class CreateUserRequest(BaseModel):
     last_name: str
     password: str
     role: str
+    phone_number: int
 
 
 class Token(BaseModel):
@@ -151,6 +152,7 @@ async def create_user(
             create_user_request.password
         ),
         is_active=True,
+        phone_number=create_user_request.phone_number,
     )
 
     db.add(create_user_model)
