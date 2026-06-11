@@ -2,17 +2,25 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any
 from pydantic import BaseModel
 
-from fastapi import APIRouter, Depends, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi.security import (
+    OAuth2PasswordRequestForm,
+    OAuth2PasswordBearer,
+)
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from jose import jwt
+from jose import JWTError, jwt
 
 from database import Sessionlocal
 from models import Users
 
-router = APIRouter()
+router = APIRouter(prefix="/auth", tags=["Auth"])
+
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oath2_bearer = OAuth2PasswordBearer(
+    tokenUrl="auth/login"
+)  # This is like redirect after this opration happend
+
 SECRET_KEY = (
     "1374ebf61b49930e570332f429da67aa81066943b89a6abddfe58df4cf83b0e2"
 )
@@ -64,6 +72,27 @@ def create_access_token(
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGHORITHM)
 
 
+def get_current_user(token: Annotated[str, Depends(oath2_bearer)]):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=ALGHORITHM)
+        username = payload.get("sub")
+        user_id = payload.get("id")
+
+        if username is None or user_id is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could validate user",
+            )
+
+        return {"username": username, "id": user_id}
+
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could validate user",
+        )
+
+
 """
 ---------------------------------------------------------------------
 DATA SHAPH 
@@ -94,11 +123,7 @@ ROUTES
 """
 
 
-@router.post(
-    "/auth/sign-up",
-    tags=["Auth"],
-    status_code=status.HTTP_201_CREATED,
-)
+@router.post("/sign-up", status_code=status.HTTP_201_CREATED)
 async def create_user(
     db: db_depedency,
     create_user_request: CreateUserRequest,
@@ -121,16 +146,10 @@ async def create_user(
 
 
 @router.post(
-    "/auth/login",
-    tags=["Auth"],
-    status_code=status.HTTP_200_OK,
-    response_model=Token,
+    "/login", status_code=status.HTTP_200_OK, response_model=Token
 )
 async def login_for_access_token(
-    form_data: Annotated[
-        OAuth2PasswordRequestForm,
-        Depends(),
-    ],
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: db_depedency,
 ):
 
@@ -141,7 +160,10 @@ async def login_for_access_token(
     )
 
     if not user:
-        return "Failed Authentication"
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could validate user",
+        )
 
     token = create_access_token(
         user.username, user.id, timedelta(minutes=20)
