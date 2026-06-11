@@ -12,5 +12,5 @@ app = FastAPI()
 # and then create database.
 models.Base.metadata.create_all(bind=engine)
 
-app.include_router(auth.auth_router)
-app.include_router(todos.todos_router)
+app.include_router(auth.router)
+app.include_router(todos.router)

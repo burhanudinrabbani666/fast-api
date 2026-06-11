@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from models import Todos
 
-todos_router = APIRouter()
+router = APIRouter()
 
 
 def get_db():
@@ -28,7 +28,7 @@ class TodoRequest(BaseModel):
     complete: bool
 
 
-@todos_router.get(
+@router.get(
     "/todos",
     status_code=status.HTTP_200_OK,
     tags=["Todos"],
@@ -37,7 +37,7 @@ async def read_all(db: db_depedency):
     return db.query(Todos).all()
 
 
-@todos_router.get(
+@router.get(
     "/todos/{todo_id}",
     status_code=status.HTTP_200_OK,
     tags=["Todos"],
@@ -51,7 +51,7 @@ async def read_todo(db: db_depedency, todo_id: int = Path(gt=0)):
     raise HTTPException(status_code=404, detail="Todo not found")
 
 
-@todos_router.post(
+@router.post(
     "/todos",
     status_code=status.HTTP_201_CREATED,
     tags=["Todos"],
@@ -66,7 +66,7 @@ async def create_todo(db: db_depedency, todo_request: TodoRequest):
     return todo_model
 
 
-@todos_router.put(
+@router.put(
     "/todos/{todo_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     tags=["Todos"],
@@ -92,7 +92,7 @@ async def update_todo(
     db.commit()
 
 
-@todos_router.delete(
+@router.delete(
     "/todos/{todo_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     tags=["Todos"],
