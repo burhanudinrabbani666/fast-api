@@ -173,6 +173,8 @@ async def delete_todo(
     db: db_depedency,
     todo_id: int = Path(gt=0),
 ):
+    print(user)
+
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

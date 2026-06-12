@@ -73,8 +73,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify(payload),
                 });
 
-                console.log(response);
-
                 if (response.ok) {
                     window.location.href = "/todos/todo/page"; // Redirect to the todo page
                 } else {
@@ -109,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     if (response.ok) {
                         // Handle success
-                        window.location.href = "/todos/todo-page"; // Redirect to the todo page
+                        window.location.href = "/todos/todo/page"; // Redirect to the todo page
                     } else {
                         // Handle error
                         const errorData = await response.json();
