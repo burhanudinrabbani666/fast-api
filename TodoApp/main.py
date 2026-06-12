@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, Response
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 
 from .database import engine
 from .models import Base
@@ -13,12 +14,17 @@ app = FastAPI()
 Base.metadata.create_all(bind=engine)
 templates = Jinja2Templates(directory="TodoApp/templates")
 
+app.mount(
+    "/static",
+    StaticFiles(directory="TodoApp/static"),
+    name="static",
+)
+
 
 @app.get("/")
 def test(request: Request) -> Response:
     return templates.TemplateResponse(
-        request=request,
-        name="home.html",
+        request=request, name="home.html"
     )
 
 

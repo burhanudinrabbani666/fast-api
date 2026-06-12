@@ -2,7 +2,17 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any
 from pydantic import BaseModel
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import (
+    APIRouter,
+    Depends,
+    status,
+    HTTPException,
+    Request,
+    Response,
+)
+from fastapi.templating import Jinja2Templates
+
+
 from fastapi.security import (
     OAuth2PasswordRequestForm,
     OAuth2PasswordBearer,
@@ -46,6 +56,7 @@ def get_db():
 
 
 db_depedency = Annotated[Session, Depends(get_db)]
+
 
 # --------------------------------------------------------------------
 # AUTHENTICATION
@@ -187,3 +198,19 @@ async def login(
     )
 
     return {"access_token": token, "token_type": "bearer"}
+
+
+"""
+---------------------------------------------------------------------
+PAGES
+---------------------------------------------------------------------
+"""
+
+templates = Jinja2Templates(directory="TodoApp/templates")
+
+
+@router.get("/sign-in-page")
+def render_login_page(request: Request) -> Response:
+    return templates.TemplateResponse(
+        request=request, name="sign-in.html"
+    )
