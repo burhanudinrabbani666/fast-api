@@ -77,7 +77,7 @@ def create_access_token(
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGHORITHM)
 
 
-def get_current_user(
+async def get_current_user(
     token: Annotated[str, Depends(oath2_bearer)],
 ) -> dict[str, Any]:
     try:
