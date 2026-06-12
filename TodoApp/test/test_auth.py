@@ -1,5 +1,14 @@
+from jose import jwt
+from datetime import timedelta
+
 from .utils import *
-from ..routers.auth import get_db, authenticate_user
+from ..routers.auth import (
+    get_db,
+    authenticate_user,
+    create_access_token,
+    SECRET_KEY,
+    ALGHORITHM,
+)
 
 app.dependency_overrides[get_db] = override_get_db
 
@@ -20,3 +29,28 @@ def test_auth_user(test_user):  # type: ignore
 
     wrong_password = authenticate_user(test_user.username, "bani123", db)  # type: ignore
     assert wrong_password is False
+
+
+def test_create_access_token():
+    username = "testuser"
+    user_id = 1
+    role = "user"
+    expires_delta = timedelta(days=1)
+
+    token = create_access_token(
+        username,
+        user_id,
+        role,
+        expires_delta,
+    )
+
+    decode_token = jwt.decode(
+        token,
+        SECRET_KEY,
+        algorithms=ALGHORITHM,
+        options={"verify_signature": False},
+    )
+
+    assert decode_token["sub"] == username
+    assert decode_token["id"] == user_id
+    assert decode_token["role"] == role
