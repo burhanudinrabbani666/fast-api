@@ -18,7 +18,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oath2_bearer = OAuth2PasswordBearer(
-    tokenUrl="auth/login"
+    tokenUrl="auth/sign-in"
 )  # This is like redirect after this opration happend
 
 SECRET_KEY = (
@@ -137,7 +137,7 @@ ROUTES
 
 
 @router.post("/sign-up", status_code=status.HTTP_201_CREATED)
-async def create_user(
+async def register_user(
     db: db_depedency,
     create_user_request: CreateUserRequest,
 ):
@@ -160,9 +160,9 @@ async def create_user(
 
 
 @router.post(
-    "/login", status_code=status.HTTP_200_OK, response_model=Token
+    "/sign-in", status_code=status.HTTP_200_OK, response_model=Token
 )
-async def login_for_access_token(
+async def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: db_depedency,
 ):

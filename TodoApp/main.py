@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
+from fastapi.templating import Jinja2Templates
 
 from .database import engine
 from .models import Base
@@ -10,6 +11,15 @@ app = FastAPI()
 # This automaticly searh for database.py and models.py
 # and then create database.
 Base.metadata.create_all(bind=engine)
+templates = Jinja2Templates(directory="TodoApp/templates")
+
+
+@app.get("/")
+def test(request: Request) -> Response:
+    return templates.TemplateResponse(
+        request=request,
+        name="home.html",
+    )
 
 
 @app.get("/healthy")
