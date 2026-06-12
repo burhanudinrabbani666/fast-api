@@ -41,7 +41,7 @@ def test_change_password_failed(test_user):  # type: ignore
 def test_change_phone_number(test_user):  # type: ignore
     response = client.post(
         "/users/change_phone",
-        json={"phone": 123445, "new_phone": 121212},
+        json={"phone": 123445, "new_phone_number": 121212},
     )
 
     assert response.status_code == status.HTTP_204_NO_CONTENT

@@ -132,6 +132,7 @@ async def change_phone(
     db: db_depedency,
     new_phone_request: NewPhoneRequest = Body(),
 ):
+    print(new_phone_request)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

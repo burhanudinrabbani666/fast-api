@@ -51,7 +51,7 @@ db_depedency = Annotated[Session, Depends(get_db)]
 # AUTHENTICATION
 
 
-def autenticate_user(username: str, password: str, db: Session):
+def authenticate_user(username: str, password: str, db: Session):
     user = db.query(Users).filter(Users.username == username).first()
     if not user:
         return False
@@ -167,7 +167,7 @@ async def login_for_access_token(
     db: db_depedency,
 ):
 
-    user = autenticate_user(
+    user = authenticate_user(
         form_data.username,
         form_data.password,
         db,
