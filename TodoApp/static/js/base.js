@@ -52,20 +52,17 @@ document.addEventListener("DOMContentLoaded", () => {
             const todoId = url.substring(url.lastIndexOf("/") + 1);
 
             const payload = {
-                title: data.title,
-                description: data.description,
+                title: data.title.trim(),
+                description: data.description.trim(),
                 priority: parseInt(data.priority),
                 complete: data.complete === "on",
             };
 
             try {
                 const token = getCookie("access_token");
-                console.log(token);
                 if (!token) {
                     throw new Error("Authentication token not found");
                 }
-
-                console.log(`${todoId}`);
 
                 const response = await fetch(`/todos/${todoId}`, {
                     method: "PUT",
@@ -76,8 +73,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     body: JSON.stringify(payload),
                 });
 
+                console.log(response);
+
                 if (response.ok) {
-                    window.location.href = "/todos/todo-page"; // Redirect to the todo page
+                    window.location.href = "/todos/todo/page"; // Redirect to the todo page
                 } else {
                     // Handle error
                     const errorData = await response.json();
