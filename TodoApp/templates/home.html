@@ -1,17 +1,2 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TodoApp</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', path='/css/base.css') }}"
-      type="text/css"
-    />
-  </head>
-
-  <body>
-    <h1>Welcome to this FastAPI Course!</h1>
-  </body>
-</html>
+{% include 'layout.html' %}
+<h1>Welcome to this FastAPI Course!</h1>
