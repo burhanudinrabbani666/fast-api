@@ -1,7 +1,17 @@
 from typing import Annotated, Any
 from pydantic import BaseModel, Field
+from starlette.responses import RedirectResponse
 
-from fastapi import APIRouter, Depends, HTTPException, status, Path
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+    Path,
+    Request,
+    Response,
+)
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from ..database import Sessionlocal
@@ -30,6 +40,14 @@ db_depedency = Annotated[Session, Depends(get_db)]
 user_depedency = Annotated[
     dict[str, Any] | None, Depends(get_current_user)
 ]
+
+
+def redirect_to_login():
+    redirect_response = RedirectResponse(
+        url="/auth/sign-in-page", status_code=status.HTTP_302_FOUND
+    )
+    redirect_response.delete_cookie(key="access_token")
+    return redirect_response
 
 
 """
@@ -174,3 +192,62 @@ async def delete_todo(
         )
 
     db.commit()
+
+
+"""
+---------------------------------------------------------------------
+PAGES
+---------------------------------------------------------------------
+"""
+
+templates = Jinja2Templates(directory="TodoApp/templates")
+
+
+@router.get("/todo/page/")
+async def get_todo_page(
+    request: Request, db: db_depedency
+) -> Response:
+    try:
+        token = request.cookies.get("access_token")
+        if token is None:
+            return redirect_to_login()
+
+        user = await get_current_user(token=token)
+
+        if user.get("username") == None:
+            return redirect_to_login()
+
+        todos = (
+            db.query(Todos)
+            .filter(Todos.owner_id == user.get("id"))
+            .all()
+        )
+
+        return templates.TemplateResponse(
+            request=request,
+            name="todo.html",
+            context={"todos": todos, "user": user},
+        )
+    except:
+        return redirect_to_login()
+
+
+@router.get("/add-todo/page")
+async def get_add_todo_page(request: Request) -> Response:
+    try:
+        token = request.cookies.get("access_token")
+        if token is None:
+            return redirect_to_login()
+
+        user = await get_current_user(token=token)
+        if user.get("username") == None:
+            return redirect_to_login()
+
+        return templates.TemplateResponse(
+            request=request,
+            name="add-todo.html",
+            context={"user": user},
+        )
+
+    except:
+        return redirect_to_login()
