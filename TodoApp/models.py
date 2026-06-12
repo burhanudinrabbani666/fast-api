@@ -13,6 +13,9 @@ from sqlalchemy.orm import Mapped, mapped_column
 class Users(Base):
     __tablename__ = "users"
 
+    def __repr__(self):
+        return f"<Users id={self.id} username={self.username} email={self.email}>"
+
     id: Mapped[int] = mapped_column(
         Integer,
         primary_key=True,

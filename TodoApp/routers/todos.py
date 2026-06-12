@@ -135,7 +135,7 @@ async def update_todo(
     )
     if todo_model is None:
         raise HTTPException(
-            status_code=204,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Todo not found",
         )
 

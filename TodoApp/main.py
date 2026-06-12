@@ -2,7 +2,6 @@ from fastapi import FastAPI
 
 from .database import engine
 from .models import Base
-
 from .routers import auth, todos, admin, users
 
 app = FastAPI()
