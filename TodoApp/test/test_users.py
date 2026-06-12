@@ -21,7 +21,7 @@ def test_return_user(test_user):  # type: ignore
 
 def test_change_password_success(test_user):  # type: ignore
     response = client.post(
-        "/users/change_user",
+        "/users/new-password",
         json={"password": "bani", "new_password": "bani123"},
     )
 
@@ -30,7 +30,7 @@ def test_change_password_success(test_user):  # type: ignore
 
 def test_change_password_failed(test_user):  # type: ignore
     response = client.post(
-        "/users/change_user",
+        "/users/new-password",
         json={"password": "wrongpassword", "new_password": "bani123"},
     )
 
@@ -40,7 +40,7 @@ def test_change_password_failed(test_user):  # type: ignore
 
 def test_change_phone_number(test_user):  # type: ignore
     response = client.post(
-        "/users/change_phone",
+        "/users/new-phone-number",
         json={"phone": 123445, "new_phone_number": 121212},
     )
 

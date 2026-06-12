@@ -85,10 +85,10 @@ async def get_user(user: user_depedency, db: db_depedency):
 
 
 @router.post(
-    "/change_user",
+    "/new-password",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-async def change_user(
+async def new_password(
     user: user_depedency,
     db: db_depedency,
     new_password_request: NewPasswordRequest = Body(),
@@ -124,10 +124,10 @@ async def change_user(
 
 
 @router.post(
-    "/change_phone",
+    "/new-phone-number",
     status_code=status.HTTP_204_NO_CONTENT,
 )
-async def change_phone(
+async def new_phone_number(
     user: user_depedency,
     db: db_depedency,
     new_phone_request: NewPhoneRequest = Body(),

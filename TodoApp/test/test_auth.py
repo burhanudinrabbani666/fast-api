@@ -1,5 +1,6 @@
 import pytest
 
+from fastapi import HTTPException
 from jose import jwt
 from datetime import timedelta
 
@@ -61,7 +62,11 @@ def test_create_access_token():
 
 @pytest.mark.asyncio
 async def test_get_current_user_valid_token():
-    encode = {"sub": "testuser", "id": 1, "role": "admin"}
+    encode: dict[str, Any] = {
+        "sub": "testuser",
+        "id": 1,
+        "role": "admin",
+    }
     token = jwt.encode(encode, SECRET_KEY, algorithm=ALGHORITHM)
 
     user = await get_current_user(token)
@@ -70,3 +75,15 @@ async def test_get_current_user_valid_token():
         "id": 1,
         "user_role": "admin",
     }
+
+
+@pytest.mark.asyncio
+async def test_get_current_user_missing_payload():
+    encode = {"role": "user"}
+    token = jwt.encode(encode, SECRET_KEY, algorithm=ALGHORITHM)
+
+    with pytest.raises(HTTPException) as excinfo:
+        await get_current_user(token=token)
+
+    assert excinfo.value.status_code == 401
+    assert excinfo.value.detail == "Could validate user"
