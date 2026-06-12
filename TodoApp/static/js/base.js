@@ -229,6 +229,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return cookieValue;
     }
 
+    const logOut = document.getElementById("logout");
+    if (logOut) {
+        logOut.addEventListener("click", logout);
+    }
+
     function logout() {
         // Get all cookies
         const cookies = document.cookie.split(";");

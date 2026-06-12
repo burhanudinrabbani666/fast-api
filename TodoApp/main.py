@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Request, Response
-from fastapi.templating import Jinja2Templates
+from fastapi import FastAPI, Request, Response, status
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 
 from .database import engine
 from .models import Base
@@ -12,7 +12,6 @@ app = FastAPI()
 # This automaticly searh for database.py and models.py
 # and then create database.
 Base.metadata.create_all(bind=engine)
-templates = Jinja2Templates(directory="TodoApp/templates")
 
 app.mount(
     "/static",
@@ -23,8 +22,8 @@ app.mount(
 
 @app.get("/")
 def test(request: Request) -> Response:
-    return templates.TemplateResponse(
-        request=request, name="home.html"
+    return RedirectResponse(
+        url="/todos/todo/page", status_code=status.HTTP_302_FOUND
     )
 
 
